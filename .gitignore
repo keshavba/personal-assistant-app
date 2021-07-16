@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Specific Files
-client_secret.json
+secret/
 calendarapi.py

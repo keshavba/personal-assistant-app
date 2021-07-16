@@ -87,7 +87,7 @@ def respond(voice_data):
         user.set_name(person_name)
 
         empty_list = []
-        openfile = open('name.pkl', 'wb')
+        openfile = open(str(os.getenv('NAME')), 'wb')
         pickle.dump(empty_list, openfile)
         pickle.dump(user.name, openfile)
         openfile.close()
@@ -117,7 +117,11 @@ def respond(voice_data):
         search_query(search_phrase)
 
     if terms_exist(['youtube']):
-        search_phrase = voice_data.split("for")[-1]
+        if 'youtube for' in voice_data:
+            search_phrase = voice_data.split("youtube for")[-1]
+        else:
+            search_phrase = voice_data.split("youtube")[-1]
+        
         url = f"https://www.youtube.com/results?search_query={search_phrase}"
         webbrowser.get().open(url)
         assistant_speak('Here is what I found for' + search_phrase + ' on youtube')
@@ -130,7 +134,7 @@ def respond(voice_data):
 
     if terms_exist(['find location']):
         location = record_audio('What is the location?')
-        url = 'https://google.nl/maps/place/' + location + '/&amp'
+        url = 'https://www.google.com/maps/search/?api=1&query=' + location 
         webbrowser.get().open(url)
         assistant_speak('Here is the location of ' + location)
     
@@ -146,9 +150,9 @@ def respond(voice_data):
         webbrowser.get().open(atlantic_url)
         assistant_speak('Here is coronavirus updates on Google and the latest Atlantic articles related to the coronavirus!')
     
-    if terms_exist(['rock paper scissors']):
-        voice_data = record_audio("choose among rock, paper, or scissor")
-        moves=["rock", "paper", "scissor"]
+    if terms_exist(['rock-paper-scissors']):
+        voice_data = record_audio("choose among rock, paper, or scissors")
+        moves=["rock", "paper", "scissors"]
     
         comp_move = random.choice(moves)
         player_move = voice_data
@@ -157,18 +161,18 @@ def respond(voice_data):
         assistant_speak("You chose " + player_move)
         
         if player_move == comp_move:
-            assistant_speak("the match is draw")
-        elif player_move == "rock" and comp_move == "scissor":
+            assistant_speak("The match is a draw")
+        elif player_move == "rock" and comp_move == "scissors":
             assistant_speak("Player wins")
         elif player_move == "rock" and comp_move == "paper":
             assistant_speak("Computer wins")
         elif player_move == "paper" and comp_move == "rock":
             assistant_speak("Player wins")
-        elif player_move == "paper" and comp_move == "scissor":
+        elif player_move == "paper" and comp_move == "scissors":
             assistant_speak("Computer wins")
-        elif player_move == "scissor" and comp_move == "paper":
+        elif player_move == "scissors" and comp_move == "paper":
             assistant_speak("Player wins")
-        elif player_move == "scissor" and comp_move == "rock":
+        elif player_move == "scissors" and comp_move == "rock":
             assistant_speak("Computer wins")
 
     if terms_exist(['thank you']):
@@ -201,11 +205,7 @@ def search_query(query):
 
 def set_user_name():
 
-    data = record_audio()
-
-    person_name = data.split("name")[-1]
-    tempName = person_name.split()
-    person_name = tempName[1]
+    person_name = record_audio()
     
     response = record_audio(f"Is your name {person_name}?")
     if "no" in response:
@@ -214,19 +214,26 @@ def set_user_name():
         assistant_speak(f"Great! Seems like I got lucky this time.")
 
     user.set_name(person_name)
-    pickle.dump(user.name, open('name.pkl', 'wb'))
+    pickle.dump(user.name, open(str(os.getenv('NAME')), 'wb'))
 
 time.sleep(1)
 
 user = person()
 
-if path.exists('name.pkl'):
-    user.name = pickle.load(open('name.pkl', 'rb'))
+if path.exists(str(os.getenv('NAME'))):
+
+    with (open(str(os.getenv('NAME')), "rb")) as openfile:
+        while True:
+            try:
+                user.name = pickle.load(openfile)
+            except EOFError:
+                break
+    
     assistant_speak("Hi! How can I help you?")
 else:
     assistant_speak("Hi! First off, may I know your name?")
     set_user_name()
 
-while(path.exists('name.pkl')):
+while path.exists(str(os.getenv('NAME'))):
     voice_data = record_audio()
     respond(voice_data)
