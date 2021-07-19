@@ -12,10 +12,7 @@ from dotenv import load_dotenv
 
 from googleapiclient.discovery import build
 from urllib import parse
-
-load_dotenv()
-recognizer = sr.Recognizer()
-appName = "Kashish"
+import calendarapi
 
 def terms_exist(terms):
     for term in terms:
@@ -143,6 +140,21 @@ def respond(voice_data):
         webbrowser.get().open(url)
         assistant_speak("Here's your calendar!")
     
+    if terms_exist(['create calendar event']):
+
+        timezone_city = record_audio("Please tell me the city that you currently live in for timezone purposes")
+        timezone = calendarapi.find_timezone(timezone_city)
+
+        event_time = record_audio("Please tell me the time of the event based on the following example format: 5 May 2 PM")
+        title = record_audio("Please tell me the title of the event")
+        duration = record_audio("Please tell me the duration of the event in hours")
+
+        calendarapi.create_event(timezone=timezone, start_time_str=event_time, title=title, duration=int(duration))
+
+        url = 'https://calendar.google.com'
+        webbrowser.get().open(url)
+        assistant_speak("Here's your calendar. Your new event should be there!")
+
     if terms_exist(['coronavirus update', 'covid update', 'covid 19 update']):
         google_url = "https://google.com/search?q=" + 'coronavirus+update'
         webbrowser.get().open(google_url)
@@ -215,6 +227,10 @@ def set_user_name():
 
     user.set_name(person_name)
     pickle.dump(user.name, open(str(os.getenv('NAME')), 'wb'))
+
+load_dotenv()
+recognizer = sr.Recognizer()
+appName = "Kashish"
 
 time.sleep(1)
 
