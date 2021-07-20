@@ -37,6 +37,22 @@ def create_event(timezone, start_time_str, title, duration, description=None, lo
 
     service.events().insert(calendarId='primary', body=event).execute()
 
+def delete_event(name):
+
+    page_token = None
+    while True:
+        events = service.events().list(calendarId='primary', pageToken=page_token).execute()
+
+        for event in events['items']:
+            if name == event['summary']:
+                event_ID = event['id']
+        
+        page_token = events.get('nextPageToken')
+        if not page_token:
+            break
+
+    service.events().delete(calendarId='primary', eventId=event_ID).execute()
+
 def find_timezone(timezone_city):
     
     geoLocator = Nominatim(user_agent='geoapiExercises')

@@ -147,6 +147,7 @@ def respond(voice_data):
 
         event_time = record_audio("Please tell me the time of the event based on the following example format: 5 May 2 PM")
         title = record_audio("Please tell me the title of the event")
+        title = title.capitalize()
         duration = record_audio("Please tell me the duration of the event in hours")
 
         calendarapi.create_event(timezone=timezone, start_time_str=event_time, title=title, duration=int(duration))
@@ -154,6 +155,11 @@ def respond(voice_data):
         url = 'https://calendar.google.com'
         webbrowser.get().open(url)
         assistant_speak("Here's your calendar. Your new event should be there!")
+
+    if terms_exist(['delete calendar event']):
+        event_name = record_audio("Please tell me the title of the event")
+        event_name.capitalize()
+        calendarapi.delete_event(name=event_name)
 
     if terms_exist(['coronavirus update', 'covid update', 'covid 19 update']):
         google_url = "https://google.com/search?q=" + 'coronavirus+update'
