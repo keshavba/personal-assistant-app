@@ -37,21 +37,28 @@ def create_event(timezone, start_time_str, title, duration, description=None, lo
 
     service.events().insert(calendarId='primary', body=event).execute()
 
-def delete_event(name):
+def delete_event(title):
 
+    event_ID = None
     page_token = None
+
     while True:
         events = service.events().list(calendarId='primary', pageToken=page_token).execute()
-
         for event in events['items']:
-            if name == event['summary']:
-                event_ID = event['id']
-        
+            for key, value in event.items():
+                if(key == 'summary'):
+                    if title == value.lower():
+                        event_ID = event.get('id')
+                        break
+
         page_token = events.get('nextPageToken')
         if not page_token:
             break
-
-    service.events().delete(calendarId='primary', eventId=event_ID).execute()
+    
+    if event_ID is not None:
+        service.events().delete(calendarId='primary', eventId=event_ID).execute()
+    
+    return event_ID
 
 def find_timezone(timezone_city):
     

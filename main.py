@@ -9,7 +9,6 @@ from os import path
 import random
 import pickle
 from dotenv import load_dotenv
-
 from googleapiclient.discovery import build
 from urllib import parse
 import calendarapi
@@ -157,9 +156,13 @@ def respond(voice_data):
         assistant_speak("Here's your calendar. Your new event should be there!")
 
     if terms_exist(['delete calendar event']):
-        event_name = record_audio("Please tell me the title of the event")
-        event_name.capitalize()
-        calendarapi.delete_event(name=event_name)
+        event_title = record_audio("Please tell me the title of the event")
+        result = calendarapi.delete_event(title=event_title)
+
+        if result == None:
+            assistant_speak('There is no event with the title ' + title)
+        else:
+            assistant_speak('The event or events with the title ' + event_title + ' have been deleted!')
 
     if terms_exist(['coronavirus update', 'covid update', 'covid 19 update']):
         google_url = "https://google.com/search?q=" + 'coronavirus+update'
